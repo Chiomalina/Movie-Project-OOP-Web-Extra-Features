@@ -1,0 +1,6 @@
+colorama>=0.4.6
+rapidfuzz>=3.6.1
+matplotlib>=3.7
+python-dotenv>=1.0
+requests>=2.31
+typing-extensions; python_version < "3.11"

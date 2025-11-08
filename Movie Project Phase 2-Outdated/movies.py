@@ -1,0 +1,303 @@
+import random
+import matplotlib.pyplot as plt
+from colorama import Fore, init
+from rapidfuzz import process, fuzz
+import movie_storage
+
+# Initialize colorama for colored terminal output
+init(autoreset=True)
+
+
+def prompt_title(prompt_msg):
+    """Prompt until the user provides a non-empty movie title."""
+    while True:
+        s = input(Fore.MAGENTA + prompt_msg).strip()
+        if s:
+            return s
+        print(Fore.RED + "⚠️ Title cannot be empty.")
+
+
+def prompt_rating():
+    """Prompt until a valid float between 0.0 and 10.0 is entered."""
+    while True:
+        s = input(Fore.MAGENTA + "Enter rating (0.0–10.0): ").strip()
+        try:
+            r = float(s)
+            if 0.0 <= r <= 10.0:
+                return r
+            print(Fore.RED + "⚠️ Rating must be between 0.0 and 10.0.")
+        except ValueError:
+            print(Fore.RED + "⚠️ Invalid rating format.")
+
+
+def prompt_year():
+    """Prompt until a valid four-digit year is entered."""
+    while True:
+        s = input(Fore.MAGENTA + "Enter release year (YYYY): ").strip()
+        if s.isdigit() and len(s) == 4:
+            return int(s)
+        print(Fore.RED + "⚠️ Year must be a four-digit number.")
+
+
+def prompt_choice():
+    """Prompt until the user selects a valid menu choice (0-11)."""
+    while True:
+        s = input(Fore.MAGENTA + "Enter choice (0-11): ").strip()
+        try:
+            c = int(s)
+            if 0 <= c <= 11:
+                return c
+            print(Fore.RED + "⚠️ Choice must be between 0 and 11.")
+        except ValueError:
+            print(Fore.RED + "⚠️ Invalid input; please enter a number.")
+
+
+def title():
+    """Display the program header."""
+    print(Fore.CYAN + " My Movies Database ".center(40, "*"))
+
+
+def display_menu():
+    """Show available menu options."""
+    print(Fore.YELLOW + "\nMenu:")
+    print(Fore.YELLOW + "0. Exit")
+    print(Fore.YELLOW + "1. List movies")
+    print(Fore.YELLOW + "2. Add movie")
+    print(Fore.YELLOW + "3. Delete movie")
+    print(Fore.YELLOW + "4. Update movie")
+    print(Fore.YELLOW + "5. Stats")
+    print(Fore.YELLOW + "6. Random movie")
+    print(Fore.YELLOW + "7. Search movies")
+    print(Fore.YELLOW + "8. Movies sorted by rating")
+    print(Fore.YELLOW + "9. Create Rating Histogram")
+    print(Fore.YELLOW + "10. Movies sorted by year")
+    print(Fore.YELLOW + "11. Filter movies\n")
+
+
+def list_movies():
+    """List all movies with their year and rating."""
+    movies = movie_storage.get_movies()
+    print(Fore.CYAN + f"\n{len(movies)} movies in total")
+    for mov_title, info in movies.items():
+        print(Fore.GREEN + f"{mov_title} ({info['year']}): {info['rating']}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def add_movie():
+    """Add a new movie; ensures non-empty title, valid rating and year."""
+    title_str = prompt_title("Enter new movie name: ")
+    rating_val = prompt_rating()
+    year_val = prompt_year()
+    try:
+        movie_storage.add_movie(title_str, year_val, rating_val)
+        print(Fore.GREEN + f"{title_str} ({year_val}) added with rating {rating_val}!")
+    except ValueError as e:
+        print(Fore.RED + str(e))
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def delete_movie():
+    """Delete a movie; prompts until non-empty title is given."""
+    title_str = prompt_title("Enter movie name to delete: ")
+    try:
+        movie_storage.delete_movie(title_str)
+        print(Fore.GREEN + f"{title_str} successfully deleted.")
+    except KeyError:
+        print(Fore.RED + f"Movie '{title_str}' not found.")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def update_movie():
+    """Update a movie's rating; prompts until non-empty title and valid rating."""
+    title_str = prompt_title("Enter movie name to update: ")
+    rating_val = prompt_rating()
+    try:
+        movie_storage.update_movie(title_str, rating_val)
+        print(Fore.GREEN + f"{title_str} rating updated to {rating_val}.")
+    except KeyError:
+        print(Fore.RED + f"Movie '{title_str}' not found.")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def stats():
+    """Display average, median, best and worst movie statistics."""
+    movies = movie_storage.get_movies()
+    ratings = [info['rating'] for info in movies.values()]
+    if not ratings:
+        print(Fore.RED + "No movies in the database.")
+    else:
+        avg = sum(ratings) / len(ratings)
+        median = sorted(ratings)[len(ratings)//2]
+        best = max(movies, key=lambda t: movies[t]['rating'])
+        worst = min(movies, key=lambda t: movies[t]['rating'])
+        print(Fore.CYAN + f"\nAverage Rating: {avg:.1f}")
+        print(Fore.CYAN + f"Median Rating : {median:.1f}")
+        print(Fore.GREEN + f"Best Movie    : {best} ({movies[best]['year']}) — {movies[best]['rating']}")
+        print(Fore.RED + f"Worst Movie   : {worst} ({movies[worst]['year']}) — {movies[worst]['rating']}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def random_movie():
+    """Pick and display a random movie."""
+    movies = movie_storage.get_movies()
+    if movies:
+        movie_title = random.choice(list(movies))
+        info = movies[movie_title]
+        print(Fore.GREEN + f"Your movie for tonight: {movie_title} ({info['year']}) — {info['rating']}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def search_movie():
+    """Search for movies by fuzzy matching; prompts until non-empty term."""
+    term = prompt_title("Enter part of movie name to search: ")
+    movies = movie_storage.get_movies()
+    if term in movies:
+        info = movies[term]
+        print(Fore.GREEN + f"Found: {term} ({info['year']}) — {info['rating']}")
+    else:
+        matches = process.extract(term, movies.keys(), scorer=fuzz.ratio, limit=5)
+        suggestions = [match for match, score, _ in matches  if score >= 50]
+        if suggestions:
+            print(Fore.YELLOW + "\nNo exact match. Did you mean:")
+            for m in suggestions:
+                info = movies[m]
+                print(Fore.CYAN + f" {m} ({info['year']}) — {info['rating']}")
+        else:
+            print(Fore.RED + "No similar movies found.")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def sort_movies_by_rating():
+    """Show movies sorted by descending rating."""
+    movies = movie_storage.get_movies()
+    sorted_list = sorted(movies.items(), key=lambda x: x[1]['rating'], reverse=True)
+    print(Fore.CYAN + "\nMovies sorted by rating:")
+    for t, info in sorted_list:
+        print(Fore.GREEN + f"{t} ({info['year']}) — {info['rating']}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def sort_movies_by_year():
+    """Show movies sorted by release year, asking latest-first or oldest-first."""
+    movies = movie_storage.get_movies()
+    while True:
+        ans = input(Fore.MAGENTA + "Show latest movies first? (y/n): ").strip().lower()
+        if ans in ('y', 'n'):
+            break
+        print(Fore.RED + "⚠️ Please enter 'y' or 'n'.")
+    reverse = ans == 'y'
+    sorted_list = sorted(movies.items(), key=lambda x: x[1]['year'], reverse=reverse)
+    order_desc = "latest first" if reverse else "oldest first"
+    print(Fore.CYAN + f"\nMovies sorted by year ({order_desc}):")
+    for t, info in sorted_list:
+        print(Fore.GREEN + f"{t} ({info['year']}) — {info['rating']}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def filter_movies():
+    """Filter movies by minimum rating, start year and end year."""
+    movies = movie_storage.get_movies()
+    # Prompt for criteria
+    while True:
+        input_rating = input(Fore.MAGENTA + "Enter minimum rating (leave blank for no minimum): ").strip()
+        if not input_rating:
+            min_rating = None
+            break
+        try:
+            val = float(input_rating)
+            if 0.0 <= val <= 10.0:
+                min_rating = val
+                break
+            print(Fore.RED + "⚠️ Rating must be between 0.0 and 10.0.")
+        except ValueError:
+            print(Fore.RED + "⚠️ Invalid rating format.")
+    while True:
+        input_start_year = input(Fore.MAGENTA + "Enter start year (leave blank for no start year): ").strip()
+        if not input_start_year:
+            start_year = None
+            break
+        if input_start_year.isdigit() and len(input_start_year) == 4:
+            start_year = int(input_start_year)
+            break
+        print(Fore.RED + "⚠️ Year must be a four-digit number.")
+    while True:
+        input_end_year = input(Fore.MAGENTA + "Enter end year (leave blank for no end year): ").strip()
+        if not input_end_year:
+            end_year = None
+            break
+        if input_end_year.isdigit() and len(input_end_year) == 4:
+            end_year = int(input_end_year)
+            break
+        print(Fore.RED + "⚠️ Year must be a four-digit number.")
+    # Filter logic
+    filtered = []
+    for movie_title, info in movies.items():
+        movie_rating, movie_year = info['rating'], info['year']
+        if min_rating is not None and movie_rating < min_rating:
+            continue
+        if start_year is not None and movie_year < start_year:
+            continue
+        if end_year is not None and movie_year > end_year:
+            continue
+        filtered.append((movie_title, movie_year, movie_rating))
+    # Display results
+    print(Fore.CYAN + "\nFiltered Movies:")
+    if filtered:
+        for movie_title, movie_year, movie_rating in filtered:
+            print(Fore.GREEN + f"{movie_title} ({movie_year}): {movie_rating}")
+    else:
+        print(Fore.YELLOW + "No movies match the criteria.")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def create_rating_histogram():
+    """Generate and save a histogram of movie ratings; prompts until filename provided."""
+    movies = movie_storage.get_movies()
+    ratings = [info['rating'] for info in movies.values()]
+    filename = prompt_title("Enter filename for histogram (e.g., ratings.png): ")
+    plt.figure(figsize=(10, 8))
+    plt.hist(ratings, bins=20, edgecolor='black', alpha=0.7)
+    plt.title("Movie Ratings Histogram")
+    plt.xlabel("Rating")
+    plt.ylabel("Frequency")
+    plt.grid(True)
+    plt.savefig(filename)
+    print(Fore.GREEN + f"Histogram saved to {filename}")
+    input(Fore.MAGENTA + "\nPress enter to continue")
+
+
+def main():
+    """Main loop handling user interaction and menu navigation."""
+    while True:
+        title()
+        display_menu()
+        choice = prompt_choice()
+        if choice == 0:
+            print(Fore.CYAN + "Bye!")
+            break
+        elif choice == 1:
+            list_movies()
+        elif choice == 2:
+            add_movie()
+        elif choice == 3:
+            delete_movie()
+        elif choice == 4:
+            update_movie()
+        elif choice == 5:
+            stats()
+        elif choice == 6:
+            random_movie()
+        elif choice == 7:
+            search_movie()
+        elif choice == 8:
+            sort_movies_by_rating()
+        elif choice == 9:
+            create_rating_histogram()
+        elif choice == 10:
+            sort_movies_by_year()
+        elif choice == 11:
+            filter_movies()
+
+
+if __name__ == "__main__":
+    main()
