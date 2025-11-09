@@ -17,26 +17,32 @@ def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
 		title = html.escape(str(movie.get("title", "")).strip())
 		year = html.escape(str(movie.get("year", "")).strip()) if movie.get("year") is not None else ""
 		poster = str(movie.get("poster") or "").strip()
-		notes = html.escape(str(movie.get("notes") or "").strip())
+		notes_raw = str(movie.get("notes") or "").strip()
+		notes = html.escape(notes_raw)
 
-		# Generating the hover tooltip (Can also be empty)
-		title_attr = f' title="{notes}"'
+		# Wrap poster in a container that carries data-note (for CSS tooltip)
+		# Also set a native title attribute (fallback tooltip)
 		if poster:
 			poster_attr = html.escape(poster)
-			img_tag = f' <img class="movie-poster" src="{poster_attr}"{title_attr} alt="Poster for {title}"/>'
+			poster_html = (
+				f'<img class="movie-poster" src="{poster_attr}" '
+				f' title="{notes}" alt="Poster for {title}"/>'
+			)
 		else:
-			img_tag = f'<div class="movie-poster"{title_attr}></div>'
+			poster_html = '<div class="movie-poster" title="{notes}"></div>'
 
 		parts.append(
 			f"""
-			<li>
-			  <div class="movie">
-				{img_tag}
-				<div class="movie-title">{title}</div>
-				<div class="movie-year">{year}</div>
-			  </div>
-			</li>
-			""".strip()
+	            <li>
+	              <div class="movie">
+	                <div class="poster-wrap" data-note="{notes}" title="{notes}">
+	                  {poster_html}
+	                </div>
+	                <div class="movie-title">{title}</div>
+	                <div class="movie-year">{year}</div>
+	              </div>
+	            </li>
+		    """.strip()
 		)
 	return "\n\n".join(parts)
 

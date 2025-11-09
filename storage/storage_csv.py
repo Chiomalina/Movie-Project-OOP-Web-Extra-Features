@@ -23,7 +23,7 @@ class StorageCsv(IStorage):
     All public methods satisfy IStorage.
     """
 
-    FIELDNAMES = ["title", "rating", "year", "poster"]
+    FIELDNAMES = ["title", "rating", "year", "poster", "notes"]
 
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
@@ -46,9 +46,10 @@ class StorageCsv(IStorage):
             if not title:
                 continue
             result[title] = {
-                "rating": self._to_float(row.get("rating")),  # float | None
-                "year": (row.get("year") or "").strip() or None,  # str | None
-                "poster": self._none_if_blank(row.get("poster")),  # str | None
+                "rating": self._to_float(row.get("rating")),
+                "year": (row.get("year") or "").strip() or None,
+                "poster": self._none_if_blank(row.get("poster")),
+                "notes": self._none_if_blank(row.get("notes")),  # <-- add this
             }
         return result
 
@@ -111,20 +112,19 @@ class StorageCsv(IStorage):
         If header is missing/incorrect, rewrite a header (rows preserved or next write).
         """
         needs_header = False
-
         if not os.path.exists(self.filepath):
             needs_header = True
         else:
             try:
                 with open(self.filepath, "r", encoding="utf-8", newline="") as f:
-                    sample = f.read(1024)
+                    sample = f.read(1024);
                     f.seek(0)
                     if not sample.strip():
                         needs_header = True
                     else:
                         reader = csv.DictReader(f)
                         if reader.fieldnames is None or any(
-                            fn not in (reader.fieldnames or []) for fn in self.FIELDNAMES
+                                fn not in (reader.fieldnames or []) for fn in self.FIELDNAMES
                         ):
                             needs_header = True
             except Exception:
@@ -132,7 +132,9 @@ class StorageCsv(IStorage):
 
         if needs_header:
             with open(self.filepath, "w", encoding="utf-8", newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=self.FIELDNAMES)
+                writer = csv.DictWriter(
+                    f, fieldnames=self.FIELDNAMES, extrasaction="ignore"
+                )
                 writer.writeheader()
 
     def _read_all(self) -> List[Dict[str, str]]:

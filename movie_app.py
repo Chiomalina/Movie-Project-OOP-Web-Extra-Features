@@ -2,8 +2,11 @@
 movie_app.py
 CLI application class (menu + commands)
 """
-
 from __future__ import annotations
+
+from migrations import migrate_csv_add_notes
+from storage.storage_csv import StorageCsv
+
 
 import random
 from typing import Dict, Optional, Tuple
@@ -68,6 +71,7 @@ class MovieApp:
     10. Sort by rating
     11. Sort by year
     12. Filter by rating/year
+    13. Migrate CSV: add "notes" column
     """
 
     def __init__(self, storage: IStorage) -> None:
@@ -330,6 +334,26 @@ class MovieApp:
         for title, year_text, rating_text in filtered:
             print(f"{title} ({year_text if year_text is not None else '?'}): {rating_text if rating_text is not None else '?'}")
 
+    def _command_migrate_csv_add_notes(self) -> None:
+        """If using CSV storage, add a 'notes' column to the file (idempotent)."""
+        if not isinstance(self._storage, StorageCsv):
+            print(f"{Fore.YELLOW}Current backend is not CSV; nothing to migrate.{Style.RESET_ALL}")
+            return
+
+        csv_path = getattr(self._storage, "filepath", None)
+        if not csv_path:
+            print(f"{Fore.RED}Could not determine CSV path from storage.{Style.RESET_ALL}")
+            return
+
+        try:
+            changed = migrate_csv_add_notes(csv_path)
+            if changed:
+                print(f"{Fore.GREEN}Migrated: added 'notes' column to {csv_path}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.CYAN}No change: '{notes}' column already present in {csv_path}{Style.RESET_ALL}")
+        except Exception as exc:
+            print(f"{Fore.RED}Migration failed: {exc}{Style.RESET_ALL}")
+
     # -------- Main loop --------
     def run(self) -> None:
         """Menu loop: prints options, gets a command, executes until user exits."""
@@ -346,6 +370,7 @@ class MovieApp:
             10: self._command_sort_movies_by_rating,
             11: self._command_sort_movies_by_year,
             12: self._command_filter_movies,
+            13: self._command_migrate_csv_add_notes(),
         }
 
         while True:
