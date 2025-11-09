@@ -92,11 +92,23 @@ class StorageCsv(IStorage):
         rows[idx]["rating"] = "" if rating is None else f"{float(rating)}"
         self._write_all(rows)
 
+    def update_movie_notes(self, title: str, notes: Optional[str]) -> None:
+        """
+        Update notes given to a movie by user; raise KeyError if not found.
+        """
+        rows = self._read_all()
+        idx = self._find_index_by_title(rows, title)
+        if idx is None:
+            raise KeyError(f'Movie "{title}" not found.')
+        rows[idx]["notes"] = (notes or "").strip()
+        self._write_all(rows)
+
     # ------------- Internals -------------
 
     def _ensure_file(self) -> None:
         """
         Make sure the CSV exists and has the correct header.
+        If header is missing/incorrect, rewrite a header (rows preserved or next write).
         """
         needs_header = False
 
@@ -126,18 +138,28 @@ class StorageCsv(IStorage):
     def _read_all(self) -> List[Dict[str, str]]:
         with open(self.filepath, "r", encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
-            # If header wrong/missing, fix and reopen.
-            if reader.fieldnames is None or any(fn not in (reader.fieldnames or []) for fn in self.FIELDNAMES):
-                self._ensure_file()
-                f.seek(0)
-                reader = csv.DictReader(f)
-            return [dict(row) for row in reader]
+            rows = [dict(row) for row in reader]
+
+            # Backfill for older files that had no notes column
+            for row in rows:
+                if "notes" not in row:
+                    row["notes"] = ""
+            return rows
 
     def _write_all(self, rows: List[Dict[str, str]]) -> None:
         with open(self.filepath, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=self.FIELDNAMES)
+            # extraAction="ignore" avoids crashing if any row has stray keys
+            writer = csv.DictWriter(
+                f, fieldnames=self.FIELDNAMES, extrasaction="ignore"
+            )
             writer.writeheader()
-            writer.writerows(rows)
+            for row in rows:
+                row.setdefault("title", "")
+                row.setdefault("rating", "")
+                row.setdefault("year", "")
+                row.setdefault("poster", "")
+                row.setdefault("notes", "")
+                writer.writerow(row)
 
     @staticmethod
     def _find_index_by_title(rows: List[Dict[str, str]], title: str) -> Optional[int]:

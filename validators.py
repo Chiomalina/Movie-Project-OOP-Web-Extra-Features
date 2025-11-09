@@ -70,6 +70,14 @@ def prompt_rating() -> float:
         print(Fore.RED + "⚠️ Rating must be a finite number between 0.0 and 10.0.")
 
 
+def prompt_notes() -> str:
+    """
+    Prompt the user for a note string (can be empty to clear).
+    Returns the stripped text ('' means clear).
+    """
+    return input(Fore.MAGENTA + "Enter movie notes (blank to clear):").strip()
+
+
 def prompt_year_required(prompt_msg: str = "Enter release year") -> int:
     """
     Prompt until a valid 4-digit release year is entered (must not be in the future).

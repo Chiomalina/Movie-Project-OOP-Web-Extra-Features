@@ -1,6 +1,6 @@
 """
 movie_app.py
-CLI application class (menu + commands). No main() here.
+CLI application class (menu + commands)
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from utils import normalize_title
 from validators import (
     prompt_choice,
     prompt_rating,
+    prompt_notes,
     prompt_title,
     prompt_year_filter,
     safe_float,
@@ -58,7 +59,7 @@ class MovieApp:
     1.  List movies
     2.  Add movie
     3.  Delete movie
-    4.  Update movie rating
+    4.  Update movie notes
     5.  Stats
     6.  Random movie
     7.  Create rating histogram
@@ -156,7 +157,7 @@ class MovieApp:
         print(f"'{resolved_title}' successfully deleted.")
 
     def _command_update_movie(self) -> None:
-        """Update the rating of an existing movie."""
+        """Add/update a note for an existing movie (blank clears it)."""
         movies_dict = self._storage.list_movies()
         if not movies_dict:
             print("No movies in database.")
@@ -167,9 +168,15 @@ class MovieApp:
         if not resolved_title:
             return
 
-        new_rating = prompt_rating()
-        self._storage.update_movie(resolved_title, new_rating)
-        print(f"'{resolved_title}' updated with rating {new_rating}")
+        note_text = prompt_notes()
+        try:
+            self._storage.update_movie_notes(resolved_title, note_text or None)
+            if note_text:
+                print(f"Movie '{resolved_title}' successfully updated with note.")
+            else:
+                print(f"Note cleared for '{resolved_title}'.")
+        except KeyError as exc:
+            print(f"{Fore.RED}{exc}{Style.RESET_ALL}")
 
     def _command_stats(self) -> None:
         """

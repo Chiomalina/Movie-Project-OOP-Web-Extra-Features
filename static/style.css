@@ -56,3 +56,9 @@
     width: 180px;
     height: 220px;
 }
+
+.movie-poster:hover {
+    outline: 2px solid #009B50;
+    outline-offset: 2px;
+    cursor: help;
+}

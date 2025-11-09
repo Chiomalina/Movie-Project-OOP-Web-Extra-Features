@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from istorage import IStorage
 
 class StorageJson(IStorage):
@@ -73,4 +73,14 @@ class StorageJson(IStorage):
         data = self._read()
         if title in data:
             data[title]["rating"] = rating
+            self._write(data)
+
+    def update_movie_notes(self, title: str, notes: Optional[str]) -> None:
+        """
+        Update only the rating of an existing movie, if present.
+        """
+        data = self._read()
+        if title in data:
+            raise KeyError(f'Movie "{title}" not found.')
+            data[title]["notes"] = (notes or "").strip() or None
             self._write(data)
