@@ -106,12 +106,15 @@ class MovieApp:
             # Parse rating as float when possible
             rating_value = safe_float(core["Rating"]) if core["Rating"] is not None else None
 
+            # defensively extract imdbID"
+            imdb_id = core.get("imdb_id") or core.get("ImdbID") or core.get("imdbID")
+
             self._storage.add_movie(
                 title=core["Title"],
                 year=core["Year"],
                 rating=rating_value,
                 poster=core["Poster"],
-                imdb_id=core["imdbID"],
+                imdb_id=imdb_id,
             )
 
             print(

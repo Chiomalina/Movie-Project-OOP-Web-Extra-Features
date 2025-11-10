@@ -60,7 +60,7 @@
 .movie-poster:hover {
     outline: 2px solid #009B50;
     outline-offset: 2px;
-    cursor: help;
+    cursor: pointer;
 }
 
 /* Tooltip container */
