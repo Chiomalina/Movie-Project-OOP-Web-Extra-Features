@@ -113,3 +113,12 @@
 .stars-bg { color: #ddd; width: 100%; }
 .stars-fg { color: #f5a623; width: 0%; }
 
+/* -----IMDb LINK ----- */
+.imdb-link {
+text-decoration: none;
+}
+
+.imdb-link:hover {
+text-decoration: underline;
+}
+

@@ -4,7 +4,7 @@ CLI application class (menu + commands)
 """
 from __future__ import annotations
 
-from migrations import migrate_csv_add_notes
+from migrations import migrate_csv_ensure_columns
 from storage.storage_csv import StorageCsv
 
 
@@ -111,6 +111,7 @@ class MovieApp:
                 year=core["Year"],
                 rating=rating_value,
                 poster=core["Poster"],
+                imdb_id=core["imdbID"],
             )
 
             print(
@@ -334,23 +335,20 @@ class MovieApp:
         for title, year_text, rating_text in filtered:
             print(f"{title} ({year_text if year_text is not None else '?'}): {rating_text if rating_text is not None else '?'}")
 
-    def _command_migrate_csv_add_notes(self) -> None:
-        """If using CSV storage, add a 'notes' column to the file (idempotent)."""
+    def _command_migrate_csv_ensure_columns(self) -> None:
         if not isinstance(self._storage, StorageCsv):
             print(f"{Fore.YELLOW}Current backend is not CSV; nothing to migrate.{Style.RESET_ALL}")
             return
-
         csv_path = getattr(self._storage, "filepath", None)
         if not csv_path:
             print(f"{Fore.RED}Could not determine CSV path from storage.{Style.RESET_ALL}")
             return
-
         try:
-            changed = migrate_csv_add_notes(csv_path)
+            changed = migrate_csv_ensure_columns(csv_path, ["notes", "imdb_id"])
             if changed:
-                print(f"{Fore.GREEN}Migrated: added 'notes' column to {csv_path}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}Migrated: ensured columns 'notes' and 'imdb_id' in {csv_path}{Style.RESET_ALL}")
             else:
-                print(f"{Fore.CYAN}No change: '{notes}' column already present in {csv_path}{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}No change: columns already present in {csv_path}{Style.RESET_ALL}")
         except Exception as exc:
             print(f"{Fore.RED}Migration failed: {exc}{Style.RESET_ALL}")
 
@@ -370,12 +368,12 @@ class MovieApp:
             10: self._command_sort_movies_by_rating,
             11: self._command_sort_movies_by_year,
             12: self._command_filter_movies,
-            13: self._command_migrate_csv_add_notes(),
+            13: self._command_migrate_csv_ensure_columns,
         }
 
         while True:
             print(self.MENU_TEXT)
-            choice = prompt_choice(max_choice=12)
+            choice = prompt_choice(max_choice=13)
             if choice == 0:
                 print("Goodbye!")
                 return

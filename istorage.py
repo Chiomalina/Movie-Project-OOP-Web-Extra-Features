@@ -16,7 +16,13 @@ class IStorage(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
-	def add_movie(self, title: str, year: str, rating: float | None, poster: str | None) -> None:
+	def add_movie(self,
+          title: str,
+          year: str,
+          rating: float | None,
+          poster: str | None,
+          imdb_id: str | None = None,
+          ) -> None:
 		"""
         Persist a movie record. No input validation or user interaction here.
         """

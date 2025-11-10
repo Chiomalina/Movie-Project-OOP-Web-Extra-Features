@@ -23,7 +23,7 @@ class StorageCsv(IStorage):
     All public methods satisfy IStorage.
     """
 
-    FIELDNAMES = ["title", "rating", "year", "poster", "notes"]
+    FIELDNAMES = ["title", "rating", "year", "poster", "notes", "imdb_id"]
 
     def __init__(self, filepath: str) -> None:
         self.filepath = filepath
@@ -49,11 +49,19 @@ class StorageCsv(IStorage):
                 "rating": self._to_float(row.get("rating")),
                 "year": (row.get("year") or "").strip() or None,
                 "poster": self._none_if_blank(row.get("poster")),
-                "notes": self._none_if_blank(row.get("notes")),  # <-- add this
+                "notes": self._none_if_blank(row.get("notes")),
+                "imdb_id": self._none_if_blank(row.get("imdb_id")),
             }
         return result
 
-    def add_movie(self, title: str, year: str, rating: float | None, poster: str | None) -> None:
+    def add_movie(
+            self,
+            title: str,
+            year: str,
+            rating: float | None,
+            poster: str | None,
+            imdb_id: str | None = None,
+    ) -> None:
         """
         Add a new movie; raise ValueError if movie title already exists (case-insensitive).
         """
@@ -68,6 +76,8 @@ class StorageCsv(IStorage):
             # keep year as-is (string) to support ranges/suffixes
             "year": "" if year is None else str(year),
             "poster": poster or "",
+            "notes": "",
+            "imdb_id": imdb_id or "",
         })
         self._write_all(rows)
 
@@ -144,8 +154,8 @@ class StorageCsv(IStorage):
 
             # Backfill for older files that had no notes column
             for row in rows:
-                if "notes" not in row:
-                    row["notes"] = ""
+                row.setdefault("notes", "")
+                row.setdefault("imdb_id", "")
             return rows
 
     def _write_all(self, rows: List[Dict[str, str]]) -> None:
@@ -161,6 +171,7 @@ class StorageCsv(IStorage):
                 row.setdefault("year", "")
                 row.setdefault("poster", "")
                 row.setdefault("notes", "")
+                row.setdefault("imdb_id", "")
                 writer.writerow(row)
 
     @staticmethod

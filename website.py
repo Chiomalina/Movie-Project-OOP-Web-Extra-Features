@@ -19,6 +19,7 @@ def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
 		poster = str(movie.get("poster") or "").strip()
 		notes_raw = str(movie.get("notes") or "").strip()
 		notes = html.escape(notes_raw)
+		imdb_id = str(movie.get("imdb_id") or "").strip()
 
 		raw_r = movie.get("rating")
 		rating_val = None
@@ -35,11 +36,29 @@ def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
 		rating_num = f"{rating_val:.1f}" if rating_val is not None else "N/A"
 		rating_pct = int(max(0.0, min((rating_val or 0) / 10.0 * 100.0, 100.0)))
 
+		"""
 		poster_html = (
 			f'<img class="movie-poster" src="{html.escape(poster)}" title="{notes}" alt="Poster for {title}"/>'
 			if poster else
 			f'<div class="movie-poster" title="{notes}"></div>'
 		)
+		"""
+
+		# Build poster node
+		if poster:
+			poster_attr = html.escape(poster)
+			img = f'<img class="movie-poster" src="{poster_attr}" title="{notes}" alt="Poster for {title}"/>'
+		else:
+			img = f'<div class="movie-poster" title="{notes}"></div>'
+
+		# Wrap the IMDb id with a link if available
+		if imdb_id:
+			imdb_url = f"https://www.imdb.com/title/{html.escape(imdb_id)}/"
+			poster_html = f'<a class="imdb-link" href="{imdb_url}" target="_blank" rel="noopener noreferrer">{img}</a>'
+			title_html = f'<a class="imdb-link" href="{imdb_url}" target="_blank" rel="noopener noreferrer">{title}</a>'
+		else:
+			poster_html = img
+			title_html = title
 
 		rating_html = f"""
 				<div class="movie-rating" data-rating="{html.escape(str(raw_r or ''))}" aria-label="Rating {rating_num} out of 10">
@@ -58,7 +77,7 @@ def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
 						<div class="poster-wrap" data-note="{notes}" title="{notes}">
 						  {poster_html}
 						</div>
-						<div class="movie-title">Movie Title: {title}</div>
+						<div class="movie-title">Movie Title: {title_html}</div>
 						<div class="movie-year">Release Year: {year}</div>
 						{rating_html}
 					  </div>
@@ -109,7 +128,8 @@ def generate_website_from_storage(
 			"year": movie.get("year"),
 			"poster": movie.get("poster"),
 			"notes": movie.get("notes"),
-			"rating": _parse_rating(movie.get("rating")),   # <-- normalize
+			"rating": _parse_rating(movie.get("rating")),
+			"imdb_id": movie.get("imdb_id"),
 		})
 
 	# (optional) quick debug so you can see values in the console:

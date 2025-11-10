@@ -1,14 +1,1 @@
-title,rating,year,poster,notes
-Titanic,7.9,1997,https://m.media-amazon.com/images/M/MV5BYzYyN2FiZmUtYWYzMy00MzViLWJkZTMtOGY1ZjgzNWMwN2YxXkEyXkFqcGc@._V1_SX300.jpg,A very romantic movie
-Liam,6.9,2000,https://m.media-amazon.com/images/M/MV5BYzhhMmZlMGQtMjJlMy00OTJhLWJiOTQtZGZjMjA4ZWE0ZmQ5XkEyXkFqcGc@._V1_SX300.jpg,
-Clear and Present Danger,6.9,1994,https://m.media-amazon.com/images/M/MV5BZmRhZWJhZTctZjE4OS00NzM0LWIyYzEtNTM2MDgyY2MwNTQzXkEyXkFqcGc@._V1_SX300.jpg,
-Life,6.6,2017,https://m.media-amazon.com/images/M/MV5BNWNkYWYzNGUtOWVjNS00MGY0LWIyY2YtODllNGIxOGRlOTgyXkEyXkFqcGc@._V1_SX300.jpg,
-Becoming,7.0,2020,https://m.media-amazon.com/images/M/MV5BODg0NjU1MTYtMWJiYy00ODY5LWI2ZmEtOTMxYzMyYzRlNTc2XkEyXkFqcGc@._V1_SX300.jpg,
-Crazy,6.6,2000,https://m.media-amazon.com/images/M/MV5BMzMxMjE2MTMtYmZmZC00OTNlLWEwOTYtYzc2YjMxYjVlNTA3XkEyXkFqcGc@._V1_SX300.jpg,
-Master of None,8.9,2015–2021,https://m.media-amazon.com/images/M/MV5BMjI1MDgyMTMwMF5BMl5BanBnXkFtZTgwMDU5MzAxNzE@._V1_SX300.jpg,
-Hawaii Five-0,7.4,2010–2020,https://m.media-amazon.com/images/M/MV5BYmU1Y2Y4ZmMtYjJhYy00M2FiLWJiYWQtNmU2NGUwYjM1NGRkXkEyXkFqcGc@._V1_SX300.jpg,
-India,7.9,1993,https://m.media-amazon.com/images/M/MV5BMjEwNTU1NDc0Nl5BMl5BanBnXkFtZTcwMDQwMDkxMQ@@._V1_SX300.jpg,
-Surprise,5.0,2015,https://m.media-amazon.com/images/M/MV5BZTY3MDVjZTQtYTYzYi00MjE4LTllNjQtMDY1NjUwZmJmMTFiXkEyXkFqcGc@._V1_SX300.jpg,
-Titan,8.3,2021,https://m.media-amazon.com/images/M/MV5BZTA5OTY3ZDktZGNkYi00M2RmLTk0ZWItYjY1OWJhMTMwN2RkXkEyXkFqcGc@._V1_SX300.jpg,
-Nanny,5.3,2022,https://m.media-amazon.com/images/M/MV5BOTNlNDIzY2QtZDQ1NS00ZTRjLWE3NzQtYTk0OTQ1MjU3YTQzXkEyXkFqcGc@._V1_SX300.jpg,Educative movie
-Animals,8.0,2003,https://m.media-amazon.com/images/M/MV5BMTg3ODA5MTE2Ml5BMl5BanBnXkFtZTcwMzU2MTMyMQ@@._V1_SX300.jpg,Best kids documentary
+title,rating,year,poster,notes,imdb_id

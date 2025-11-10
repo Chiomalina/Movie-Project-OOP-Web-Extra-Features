@@ -37,8 +37,9 @@ class StorageJson(IStorage):
             raise ValueError("Root of storage JSON must be a dict")
         # Migration guard: ensure each record has the poster key
         for rec in data.values():
-            if "poster" not in rec:
-                rec["poster"] = None
+            rec.setdefault("poster", None)
+            rec.setdefault("notes", None)
+            rec.setdefault("imdb_id", None)
         return data
 
     def _write(self, data: Dict[str, Dict[str, Any]]) -> None:
@@ -49,12 +50,25 @@ class StorageJson(IStorage):
     def list_movies(self) -> Dict[str, Dict[str, Any]]:
         return self._read()
 
-    def add_movie(self, title: str, year: str | int, rating: float | None, poster: str | None) -> None:
+    def add_movie(
+            self,
+            title: str,
+            year: str | int,
+            rating: float | None,
+            poster: str | None,
+            imdb_id: str | None = None
+    ) -> None:
         """
         Persist a movie record exactly as provided by the caller.
         """
         data = self._read()
-        data[title] = {"year": str(year) if year is None else None, "rating": rating, "poster": poster}
+        data[title] = {
+            "year": str(year) if year is None else None,
+            "rating": rating,
+            "poster": poster,
+            "notes": data.get(title, {}).get("notes") if title in data else None,
+            "imdb_id": imdb_id,
+        }
         self._write(data)
 
     def delete_movie(self, title: str) -> None:
