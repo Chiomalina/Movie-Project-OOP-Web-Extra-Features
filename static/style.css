@@ -10,7 +10,7 @@
   padding: 10px 0;
   background: #009B50;
   color: white;
-  text-align: center;
+  text-align: start;
   font-size: 16px;
 
 }
@@ -33,13 +33,13 @@
 }
 
 .movie {
-  width: 160px;
+  width: 220px;
 }
 
 .movie-title,
 .movie-year {
   font-size: 0.8em;
-  text-align: center;
+  text-align: start;
 }
 
 .movie-title {
@@ -75,4 +75,41 @@
   outline-offset: 2px;
   cursor: help;
 }
+
+/* ----- Movie rating ----- */
+.movie-rating {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: start;
+}
+
+.rating-number {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #222;
+  min-width: 42px;
+  text-align: start;
+}
+
+/* 5-star bar with percentage fill */
+.stars {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  font-size: 14px;
+  width: 90px;
+  height: 1em;
+}
+.stars-bg,
+.stars-fg {
+  position: absolute;
+  top: 0; left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+}
+.stars-bg { color: #ddd; width: 100%; }
+.stars-fg { color: #f5a623; width: 0%; }
 
