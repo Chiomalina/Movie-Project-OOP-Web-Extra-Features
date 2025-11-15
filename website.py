@@ -3,7 +3,9 @@ from __future__ import annotations
 import html
 import os
 from pathlib import Path
-from typing import Dict, Any, Iterable
+from typing import Dict, Any, Iterable, List
+
+from utils import country_to_flag_image_url
 
 
 def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
@@ -123,8 +125,12 @@ def generate_website_from_storage(
 	movie_data: Dict[str, Dict[str, Any]] = storage.list_movies()
 
 	# 3) Flatten + NORMALIZE rating here (critical fix)
-	movies = []
+	movies: List[dict[str, Any]] = []
+
 	for movie_title, movie in movie_data.items():
+		raw_country = movie.get("country")
+		flag_url = country_to_flag_image_url(raw_country)
+
 		movies.append({
 			"title": movie_title,
 			"year": movie.get("year"),
@@ -132,6 +138,8 @@ def generate_website_from_storage(
 			"notes": movie.get("notes"),
 			"rating": _parse_rating(movie.get("rating")),
 			"imdb_id": movie.get("imdb_id"),
+			"country": raw_country,
+			"flag_url": flag_url,
 		})
 
 	# (optional) quick debug so you can see values in the console:
@@ -152,3 +160,45 @@ def generate_website_from_storage(
 	out_path.write_text(html_output, encoding="utf-8")
 	print(f"Template: {tpl_path}")
 	print(f"Output:   {out_path}")
+
+	with open(template_path, "r", encoding="utf-8") as f:
+		template_html = f.read()
+
+	movie_cards_html = ""
+	for movie in movies:
+		flag_img_html = ""
+		if movie["flag_url"]:
+			flag_img_html = (
+				f'<img class="movie-flag-img" '
+				f'src="{movie["flag_url"]}" '
+				f'alt="Flag of {movie["country"]}">'
+			)
+
+		movie_cards_html += f"""
+	        <article class="movie-card">
+	          <div class="movie-poster">
+	            <img src="{movie['poster_url']}" alt="Poster of {movie['title']}">
+	          </div>
+	          <div class="movie-body">
+	            <h2 class="movie-title">
+	              {movie['title']}
+	              {flag_img_html}
+	            </h2>
+	            <p class="movie-meta">
+	              {movie['year']} · IMDb: {movie['imdb_rating']} · Your rating: {movie['rating']}
+	            </p>
+	            <p class="movie-country">
+	              Origin: {movie['country']}
+	            </p>
+	          </div>
+	        </article>
+	        """
+
+	final_html = (
+		template_html
+		.replace("{{PAGE_TITLE}}", title)
+		.replace("{{MOVIE_GRID}}", movie_cards_html)
+	)
+
+	with open(output_path, "w", encoding="utf-8") as f:
+		f.write(final_html)

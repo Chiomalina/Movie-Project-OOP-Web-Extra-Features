@@ -6,17 +6,92 @@ import unicodedata
 from http.client import responses
 from typing import Iterable, List, Tuple, Optional
 from rapidfuzz import fuzz
+from src.data.country_map import COUNTRY_NAME_TO_CODE
 
 import requests
 
 FUZZY_THRESHOLD = 60
 
-# Extract names of all countries in the world
-#URL="https://restcountries.com/v3.1/all?fields=name,cca2,cca3,region"
-URL="https://api.first.org/data/v1/countries"
-response = requests.get(URL)
-response.raise_for_status()
-countries = response.json()
+# Extra manual aliases for non-standard or shortened names that OMDb might use
+COUNTRY_NAME_ALIASES = {
+    "usa": "US",
+    "u.s.a.": "US",
+    "united states": "US",
+    "uk": "GB",
+    "u.k.": "GB",
+    "england": "GB",
+    "scotland": "GB",
+    "wales": "GB",
+    "russia": "RU",
+    "south korea": "KR",
+    "north korea": "KP",
+}
+
+def normalize_country_name(raw_country: Optional[str]) -> str:
+    """
+    Takes the raw 'Country' string from OMDb (e.g. 'USA, UK')
+    and returns a single 'main' country name (e.g. 'USA').
+
+    Strategy:
+      - If the string contains commas, assume the first part
+        is the primary production country.
+      - Strip whitespace.
+    """
+    if not raw_country:
+        return ""
+
+    first = raw_country.split(",")[0].strip()
+    return first
+
+def country_name_to_iso2(raw_country: Optional[str]) -> Optional[str]:
+    """
+    Convert a country name from OMDb into a 2-letter ISO code.
+
+    Steps:
+      1. Normalize (take first country if comma-separated).
+      2. Lowercase and look up in our generated COUNTRY_NAME_TO_CODE.
+      3. Fall back to alias mapping for abbreviations like 'USA', 'UK'.
+
+    Returns:
+      - 'US' for 'USA' / 'United States' / 'United States of America'
+      - 'GB' for 'UK' / 'England' etc.
+      - None if no match found.
+    """
+    if not raw_country:
+        return None
+
+    main_name = normalize_country_name(raw_country)
+    normalized = main_name.strip().lower()
+
+    # 1) Try exact match from FIRST.org data
+    iso_from_main = COUNTRY_NAME_TO_CODE.get(normalized)
+    if iso_from_main:
+        return iso_from_main
+
+    # 2) Try alias mapping (for abbreviations or alternative names)
+    iso_from_alias = COUNTRY_NAME_ALIASES.get(normalized)
+    if iso_from_alias:
+        return iso_from_alias
+
+    # 3) Nothing found?
+    return None
+
+def country_to_flag_image_url(raw_country: Optional[str], size: str = "40x30") -> str:
+    """
+    High-level helper:
+      'USA, UK'   → 'https://flagcdn.com/40x30/us.png'
+      'Nigeria'   → 'https://flagcdn.com/40x30/ng.png'
+      None/unknown → '' (empty string, meaning: no flag)
+
+    Uses FlagCDN-style URLs:
+      https://flagcdn.com/{width}x{height}/{iso2_lowercase}.png
+    """
+    iso2 = country_name_to_iso2(raw_country)
+    if not iso2:
+        return ""
+
+    iso2_lower = iso2.lower()
+    return f"https://flagcdn.com/{size}/{iso2_lower}.png"
 
 
 def normalize_title(text: str) -> str:
