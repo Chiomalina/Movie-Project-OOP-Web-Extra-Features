@@ -18,11 +18,6 @@ response = requests.get(URL)
 response.raise_for_status()
 countries = response.json()
 
-print(countries["data"])
-for country in countries:
-    #print(f'Country: {country["name"]["common"]}, Region: {country["region"]}')
-    print(data)
-
 
 def normalize_title(text: str) -> str:
     """
