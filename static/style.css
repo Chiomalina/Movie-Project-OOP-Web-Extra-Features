@@ -1,124 +1,189 @@
-.body {
-  background: #F5F5F0;
-  color: black;
-  font-family: Rubik;
-  box-content; contain;
-
+/* ====== Base (Dark Netflix-like theme) ====== */
+:root {
+  --bg: #141414;
+  --panel: #181818;
+  --text: #e5e5e5;
+  --muted: #a3a3a3;
+  --accent: #e50914; /* Netflix red */
+  --card-w: 200px;   /* base card width; scales with viewport */
+  --card-ratio: 2/3; /* poster aspect ratio */
+  --gap: 0.75rem;
 }
 
+html, body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* Header strip you already had; darkened */
 .list-movie-title {
-  padding: 10px 0;
-  background: #009B50;
-  color: white;
-  text-align: start;
-  font-size: 16px;
-
+  padding: 16px 12px;
+  background: #0d0d0d;
+  border-bottom: 1px solid #1f1f1f;
+  text-align: center;
+}
+.list-movie-title h1 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: .2px;
+  color: var(--text);
 }
 
-.movie-grid {
-  padding: 10px 10px;
-  margin-top: 20px;
-  margin-right: 10px;
-  margin-left: 10px;
-  list-style-type: none;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 30px
+/* ====== Container ====== */
+.nx-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 2.5vw 56px;
 }
 
-.movie-grid li {
-  padding: 10px 15px;
-  text-align: left;
+/* ====== Row / Rail ====== */
+.nx-row + .nx-row { margin-top: 28px; }
+
+.nx-row-title {
+  margin: 0 0 10px;
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  font-weight: 700;
+  color: var(--text);
 }
+
+/* The horizontally scrollable strip */
+.nx-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(140px, 16vw, var(--card-w));
+  gap: var(--gap);
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;     /* Firefox */
+}
+.nx-rail::-webkit-scrollbar { display: none; } /* WebKit */
+
+/* ====== Card (your existing .movie) ====== */
+.nx-rail > li { scroll-snap-align: start; }
 
 .movie {
-  width: 220px;
+  position: relative;
+  background: var(--panel);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  grid-template-rows: auto auto auto auto; /* poster, title, year, rating */
+  gap: 6px;
+  height: 100%;
+  transition: transform .18s ease, box-shadow .18s ease;
+  will-change: transform;
+}
+.movie:hover {
+  transform: scale(1.08);
+  z-index: 3;
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
 }
 
-.movie-title,
-.movie-year {
-  font-size: 0.8em;
-  text-align: start;
-}
-
-.movie-title {
-  margin-top: 10px;
-}
-
-.movie-year {
-  color: #999;
-}
-
-
+/* Poster with consistent aspect ratio (like Netflix tiles) */
+.poster-wrap { position: relative; display: block; }
 .movie-poster {
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    width: 180px;
-    height: 220px;
+  width: 100%;
+  aspect-ratio: var(--card-ratio);
+  object-fit: cover;
+  display: block;
+  border-radius: 6px;
+  background: #222;
 }
 
-.movie-poster:hover {
-    outline: 2px solid #009B50;
-    outline-offset: 2px;
-    cursor: pointer;
+/* Optional gradient sheen on hover (subtle) */
+.poster-wrap::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,.55));
+  opacity: 0; transition: opacity .18s ease;
+  border-radius: 6px;
 }
+.movie:hover .poster-wrap::after { opacity: 1; }
 
-/* Tooltip container */
-.poster-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-/* Native hover outline hint (optional) */
-.poster-wrap:hover .movie-poster {
-  outline: 2px solid #009B50;
-  outline-offset: 2px;
-  cursor: help;
-}
-
-/* ----- Movie rating ----- */
-.movie-rating {
-  margin-top: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: start;
-}
-
-.rating-number {
-  font-size: 0.85em;
+/* Title / Year (compact, clamped) */
+.movie-title {
+  font-size: clamp(.82rem, 1.1vw, .95rem);
   font-weight: 600;
-  color: #222;
-  min-width: 42px;
-  text-align: start;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.2em;
+}
+.movie-year {
+  color: var(--muted);
+  font-size: clamp(.72rem, .95vw, .85rem);
 }
 
-/* 5-star bar with percentage fill */
+/* Rating pill + star bar (compact to fit rails) */
+.movie-rating {
+  display: flex; align-items: center; gap: 6px;
+}
+.rating-number {
+  font-size: .78rem; font-weight: 700;
+  color: #fff;
+  background: rgba(0,0,0,.35);
+  padding: 2px 6px; border-radius: 999px;
+  min-width: 36px; text-align: center;
+}
 .stars {
-  position: relative;
-  display: inline-block;
-  line-height: 1;
-  font-size: 14px;
-  width: 90px;
-  height: 1em;
+  position: relative; display: inline-block;
+  font-size: 12px; line-height: 1; width: 76px; height: 1em;
 }
-.stars-bg,
-.stars-fg {
-  position: absolute;
-  top: 0; left: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  pointer-events: none;
+.stars-bg, .stars-fg {
+  position: absolute; top: 0; left: 0;
+  white-space: nowrap; overflow: hidden; pointer-events: none;
 }
-.stars-bg { color: #ddd; width: 100%; }
+.stars-bg { color: #5c5c5c; width: 100%; }
 .stars-fg { color: #f5a623; width: 0%; }
 
-/* -----IMDb LINK ----- */
-.imdb-link {
-text-decoration: none;
+/* Tooltip on hover (your notes) */
+.poster-wrap:hover .movie-poster { outline: 2px solid rgba(229,9,20,.7); outline-offset: 2px; cursor: help; }
+.poster-wrap[data-note]:not([data-note=""])::before,
+.poster-wrap[data-note]:not([data-note=""])::after {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  opacity: 0; pointer-events: none; transition: opacity .15s ease, transform .15s ease;
+}
+.poster-wrap[data-note]:not([data-note=""])::before {
+  content: attr(data-note);
+  bottom: calc(100% + 8px);
+  background: rgba(0,0,0,.92);
+  color: #fff; font-size: 12px; line-height: 1.35;
+  padding: 8px 10px; border-radius: 6px; max-width: 260px; text-align: center;
+}
+.poster-wrap[data-note]:not([data-note=""])::after {
+  content: "";
+  bottom: 100%;
+  border: 6px solid transparent; border-top-color: rgba(0,0,0,.92);
+}
+.poster-wrap:hover::before,
+.poster-wrap:hover::after {
+  opacity: 1; transform: translate(-50%, -2px);
 }
 
-.imdb-link:hover {
-text-decoration: underline;
-}
+/* IMDb links on poster/title */
+.imdb-link { text-decoration: none; color: inherit; }
+.imdb-link:hover { text-decoration: underline; }
 
+/* ====== Responsive tuning ====== */
+@media (max-width: 900px) {
+  :root { --card-w: 180px; }
+}
+@media (max-width: 600px) {
+  :root { --card-w: 150px; }
+  .nx-container { padding: 16px 3vw 44px; }
+  .rating-number { display: none; } /* tighter on phones */
+  .stars { width: 70px; font-size: 11px; }
+}

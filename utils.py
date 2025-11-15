@@ -3,10 +3,25 @@ Normalize_title / substring_matches / fuzzy_matches
 """
 
 import unicodedata
-from typing import Iterable, List, Tuple
+from http.client import responses
+from typing import Iterable, List, Tuple, Optional
 from rapidfuzz import fuzz
 
+import requests
+
 FUZZY_THRESHOLD = 60
+
+# Extract names of all countries in the world
+#URL="https://restcountries.com/v3.1/all?fields=name,cca2,cca3,region"
+URL="https://api.first.org/data/v1/countries"
+response = requests.get(URL)
+response.raise_for_status()
+countries = response.json()
+
+print(countries["data"])
+for country in countries:
+    #print(f'Country: {country["name"]["common"]}, Region: {country["region"]}')
+    print(data)
 
 
 def normalize_title(text: str) -> str:

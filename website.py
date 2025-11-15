@@ -47,7 +47,9 @@ def build_movie_grid(movies: Iterable[Dict[str, Any]]) -> str:
 		# Build poster node
 		if poster:
 			poster_attr = html.escape(poster)
-			img = f'<img class="movie-poster" src="{poster_attr}" title="{notes}" alt="Poster for {title}"/>'
+			img = (f'<img class="movie-poster" src="{poster_attr}" '
+			       f' loading="lazy" decoding="async" '
+			       f'title="{notes}" alt="Poster for {title}"/>')
 		else:
 			img = f'<div class="movie-poster" title="{notes}"></div>'
 
@@ -106,7 +108,7 @@ def generate_website_from_storage(
 	storage,
 	template_path: str | None = None,
 	output_path: str | None = None,
-	title: str = "Chioma's Movie App",
+	title: str = "🍿LinaFlix",
 ) -> None:
 	base_dir = Path(__file__).resolve().parent
 	static_dir = base_dir / "static"

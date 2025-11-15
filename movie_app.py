@@ -268,7 +268,7 @@ class MovieApp:
                 storage=self._storage,
                 template_path="static/index_template.html",
                 output_path="static/index.html",
-                title="Chioma's Movie App",
+                title="🍿LinaFlix",
             )
             print("Website was generated successfully.")
         except Exception as exc:

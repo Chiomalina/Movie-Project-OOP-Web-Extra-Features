@@ -95,6 +95,7 @@ def extract_core_fields(payload: Dict[str, str]) -> Dict[str, Optional[str]]:
 	year = payload.get("Year")
 	rating = payload.get("imdbRating")
 	poster = payload.get("Poster")
+	country = payload.get("Country")
 
 	# Prevent OMDB from crashing incase it  returns "N/A"
 	rating = None if not rating or rating == "N/A" else rating
@@ -116,6 +117,7 @@ def extract_core_fields(payload: Dict[str, str]) -> Dict[str, Optional[str]]:
 		"Rating": rating,
 		"Poster": poster,
 		"ImdbID": imdb_id,
+		"Country": country
 	}
 
 

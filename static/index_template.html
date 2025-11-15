@@ -7,22 +7,36 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>My Movie App</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+<div class="logo">Lina<span>Flix</span></div>
+
 	<div class="list-movie-title">
   		<h1>__TEMPLATE_TITLE__</h1>
   </div>
 
-	<div>
-    <ol class="movie-grid">
+  <main class="nx-container">
+  <!-- Row 1 -->
+  <section class="nx-row">
+    <h2 class="nx-row-title">Trending Now</h2>
+    <ol class="nx-rail">
       __TEMPLATE_MOVIE_GRID__
     </ol>
+  </section>
 
+  <!-- Row 2 (example—can reuse same data until you add categories) -->
+  <section class="nx-row">
+    <h2 class="nx-row-title">Recently Added</h2>
+    <ol class="nx-rail">
+      __TEMPLATE_MOVIE_GRID__
+    </ol>
+  </section>
+</main>
 
-  </div>
 
 </body>
 </html>
